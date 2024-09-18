@@ -6,7 +6,7 @@ This is the Discord bot for our chatbot project.
 
 Install necessary dependencies:
 
-```sh
+```console
 npm i
 ```
 
@@ -22,13 +22,13 @@ FORCE_RELOAD_COMMANDS=false
 
 To run the bot:
 
-```sh
+```console
 npm run run
 ```
 
 To restart it everytime something changes in the code:
 
-```sh
+```console
 npm run dev
 ```
 
@@ -41,6 +41,6 @@ To reload the `/` commands, set the `.env` variable `FORCE_RELOAD_COMMANDS` to `
 
 To compile for production:
 
-```sh
+```console
 npm run build
 ```
