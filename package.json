@@ -1,15 +1,17 @@
 {
   "dependencies": {
+    "config": "^3.3.12",
     "discord.js": "^14.16.2",
-    "dotenv": "^16.4.5"
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
+    "@types/config": "^3.3.5",
     "nodemon": "^3.1.5",
     "typescript": "^5.6.2"
   },
   "scripts": {
     "dev": "nodemon src/main.ts",
-    "start": "node dist/index.js",
+    "start": "node dist/main.js",
     "build": "tsc",
     "run": "ts-node src/main.ts"
   }

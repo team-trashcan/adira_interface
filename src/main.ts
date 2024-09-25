@@ -1,20 +1,21 @@
 import { Client } from "discord.js";
 import { deployCommands } from "./deployCommands";
-import { config } from "./config";
+import appConfig from "./config";
 import { commands } from "./commands";
+import MongooseClient from "./Infrastructure/MongooseClient";
 
 const client = new Client({
   intents: ["Guilds", "GuildMessages", "MessageContent"],
 });
-
 client.once("ready", async (client) => {
-  if (config.FORCE_RELOAD_COMMANDS === "true") {
+  if (appConfig.bot.forceReloadCommands === true) {
     // Reload (/) commands - they are only loaded on joining a server otherwise
     console.log("Development mode, force refreshing (/) commands");
     for (const guild of client.guilds.cache.values()) {
       await deployCommands({ guildId: guild.id });
     }
   }
+
   console.log("Discord bot is ready!");
 });
 
@@ -41,4 +42,4 @@ client.on("interactionCreate", async (interaction) => {
 // });
 
 // Login to discord
-client.login(config.DISCORD_TOKEN);
+client.login(appConfig.bot.discordToken);
