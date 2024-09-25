@@ -1,15 +1,13 @@
-import dotenv from "dotenv";
+import config from "config";
 
-dotenv.config();
-
-const { DISCORD_TOKEN, DISCORD_CLIENT_ID, FORCE_RELOAD_COMMANDS } = process.env;
-
-if (!DISCORD_TOKEN || !DISCORD_CLIENT_ID) {
-  throw new Error("Missing environment variables");
+export interface Config {
+  bot: {
+    discordToken: string;
+    discordClientId: string;
+    forceReloadCommands: boolean;
+  };
 }
 
-export const config = {
-  DISCORD_TOKEN,
-  DISCORD_CLIENT_ID,
-  FORCE_RELOAD_COMMANDS,
-};
+const appConfig: Config = config.get<Config>("app");
+
+export default appConfig;

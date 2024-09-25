@@ -1,0 +1,10 @@
+app:
+  mongo:
+    uri: mongodb://127.0.0.1:27017
+    options:
+      autoCreate: true
+      dbName: adira
+  bot:
+    discordToken:
+    discordClientId:
+    forceReloadCommands: false
