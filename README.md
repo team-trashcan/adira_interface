@@ -10,12 +10,14 @@ Install necessary dependencies:
 npm i
 ```
 
-Add a `.env` file with the bot token and client id (retrieved from the [Discord Developer Portal](https://discord.com/developers/applications/1285909172403310653)):
+Add a `config/development.yaml` file with the bot token and client id (retrieved from the [Discord Developer Portal](https://discord.com/developers/applications/1285909172403310653)):
 
-```env
-DISCORD_TOKEN=xxxxx
-DISCORD_CLIENT_ID=00000
-FORCE_RELOAD_COMMANDS=false
+```yaml
+app:
+  bot:
+    discordToken: xxxxx
+    discordClientId: xxxxx
+    forceReloadCommands: false
 ```
 
 ## Development
@@ -35,7 +37,7 @@ npm run dev
 ### Force Reload / Commands
 
 This is only necessary if a new command is added or the desription of one is changed.\
-To reload the `/` commands, set the `.env` variable `FORCE_RELOAD_COMMANDS` to `true`.
+To reload the `/` commands, set the variable `forceReloadCommands` to `true`.
 
 ## Production
 
