@@ -11,14 +11,13 @@ class Api {
 
     this.axios.defaults.baseURL = baseUrl;
 
-    console.log(this.accessToken);
-    if (this.accessToken !== "") {
+    if (this.accessToken !== "" && this.accessToken !== null) {
       axios.defaults.headers.common[
         "Authorization"
       ] = `Bearer ${this.accessToken}`;
     } else {
+      // Authorization is a COULD have
       // throw new Error("No accessToken set!");
-      console.log("No accessToken set!");
     }
 
     axios.interceptors.response.use(
