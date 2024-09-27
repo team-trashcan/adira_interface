@@ -1,10 +1,14 @@
 app:
-  mongo:
-    uri: mongodb://127.0.0.1:27017
-    options:
-      autoCreate: true
-      dbName: adira
   bot:
     discordToken:
     discordClientId:
     forceReloadCommands: false
+  redis:
+    defaultTTL: 604800
+    options:
+      url: redis://127.0.0.1
+  axios:
+    baseUrl:
+    accessToken:
+  messages:
+    error500: Internal error. Please contact <@647535196039806979>.

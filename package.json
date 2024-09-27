@@ -1,8 +1,11 @@
 {
   "dependencies": {
+    "@types/redis": "^4.0.11",
+    "axios": "^1.7.7",
     "config": "^3.3.12",
     "discord.js": "^14.16.2",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "redis": "^4.7.0"
   },
   "devDependencies": {
     "@types/config": "^3.3.5",

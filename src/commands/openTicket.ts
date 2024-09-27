@@ -1,24 +1,40 @@
 import {
   CommandInteraction,
   EmbedBuilder,
-  PermissionsBitField,
   SlashCommandBuilder,
 } from "discord.js";
+import redisCache from "../redisCache";
+import appConfig from "../config";
+import api from "../api";
 
 export const data = new SlashCommandBuilder()
   .setName("openticket")
-  .setDescription("Opens a new ticket in a new discord channel.");
+  .setDescription("Opens a new ticket in a private discord channel.");
 
 export async function execute(interaction: CommandInteraction) {
-  const ticketNumber = 0;
   if (interaction.guild) {
-    // TODO: Suporter role id vom benutzer setzen lassen
-    const suporterRoleId = interaction.guild.roles.cache.find(
-      (role) => (role.id = "1286049120813060166")
-    )?.id;
+    let ticketNumber;
+    try {
+      ticketNumber = (await api.getTicketNumber()).data;
+    } catch {
+      return interaction.reply(appConfig.messages.error500);
+    }
 
-    if (suporterRoleId === undefined) {
-      return interaction.reply("Suporter role not found.");
+    let supporterRoleId;
+    try {
+      supporterRoleId = (await redisCache.getValue(interaction.guild.id)).value;
+    } catch {
+      return interaction.reply(
+        "This server has no supporter role setup. Please contact an administrator."
+      );
+    }
+    const supporterRole = interaction.guild.roles.cache.find(
+      (role) => (role.id = supporterRoleId)
+    );
+    if (supporterRole === undefined) {
+      return interaction.reply(
+        "This server has no supporter role setup. Please contact an administrator."
+      );
     }
 
     try {
@@ -33,7 +49,7 @@ export async function execute(interaction: CommandInteraction) {
             allow: ["ViewChannel"],
           },
           {
-            id: suporterRoleId,
+            id: supporterRole.id,
             allow: ["ViewChannel"],
           },
         ],
@@ -47,7 +63,7 @@ export async function execute(interaction: CommandInteraction) {
       const embed = new EmbedBuilder()
         .setTitle(`Support ticket #${ticketNumber} opened`)
         .setDescription(
-          `Hey <@${interaction.user.id}>, your support ticket has been opened!`
+          `Hey <@${interaction.user.id}>, your support ticket has been opened!\nPlease describe the issue you are facing.`
         )
         .setColor("#0099ff");
 
@@ -56,12 +72,25 @@ export async function execute(interaction: CommandInteraction) {
 
       // Silently reply to user and give channel link
       await interaction.reply({
-        content: `Suport ticket opened: <#${channel.id}>`,
+        content: `Support ticket opened: <#${channel.id}>`,
         ephemeral: true,
       });
+
+      // TODO: ticket number management completely in backend?
+      // meaning no redisCache here just get from api
+      // to /ticket-number-increased or smth
+      const newTicketNumber = +ticketNumber + 1;
+      await redisCache.setValue("ticketNumber", newTicketNumber.toString());
+
+      // TODO: Vermutlich muss hier dann noch mehr rein
+      await api.ticketHasBeenCreated(interaction.user.username);
     } catch (error) {
       console.error("Error creating private channel:", error);
-      interaction.reply("Failed to create the ticket channel.");
+      return interaction.reply(
+        `Failed to create a new ticket channel. Please reach out to a <@${supporterRoleId}> directly.`
+      );
     }
+  } else {
+    return interaction.reply("This command can only be used in a guild.");
   }
 }

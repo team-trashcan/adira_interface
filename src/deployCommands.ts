@@ -6,13 +6,9 @@ const commandsData = Object.values(commands).map((command) => command.data);
 
 const rest = new REST({ version: "10" }).setToken(appConfig.bot.discordToken);
 
-type DeployCommandsProps = {
-  guildId: string;
-};
-
-export async function deployCommands({ guildId }: DeployCommandsProps) {
+export async function deployCommands(guildId: string) {
   try {
-    console.log("Started refreshing application (/) commands.");
+    console.log("Reloading (/) commands");
 
     await rest.put(
       Routes.applicationGuildCommands(appConfig.bot.discordClientId, guildId),
@@ -21,8 +17,8 @@ export async function deployCommands({ guildId }: DeployCommandsProps) {
       }
     );
 
-    console.log("Successfully reloaded application (/) commands.");
+    console.log("Successfully reloaded (/) commands");
   } catch (error) {
-    console.error(error);
+    console.error("Error while reloading (/) commands:", error);
   }
 }

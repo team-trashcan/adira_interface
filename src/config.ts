@@ -6,6 +6,19 @@ export interface Config {
     discordClientId: string;
     forceReloadCommands: boolean;
   };
+  redis: {
+    defaultTTL: number;
+    options: {
+      url: string;
+    };
+  };
+  axios: {
+    baseUrl: string;
+    accessToken: string;
+  };
+  messages: {
+    error500: string;
+  };
 }
 
 const appConfig: Config = config.get<Config>("app");
