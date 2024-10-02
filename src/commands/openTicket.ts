@@ -17,7 +17,9 @@ export async function execute(interaction: CommandInteraction) {
     // Get next issue number from highest channel number
     let ticketNumber;
     try {
-      ticketNumber = +(await redisCache.getValue("ticketNumber")).value;
+      ticketNumber = +(
+        await redisCache.getValue(`ticketNumber-${interaction.guild.id}`)
+      ).value;
     } catch (error) {
       if (error instanceof RedisCacheItemNotFoundError) {
         ticketNumber = 1;
@@ -86,6 +88,12 @@ export async function execute(interaction: CommandInteraction) {
         content: `Support ticket opened: <#${channel.id}>`,
         ephemeral: true,
       });
+
+      // Set next ticketNumber
+      await redisCache.setValue(
+        `ticketNumber-${interaction.guildId}`,
+        `${ticketNumber + 1}`
+      );
 
       // TODO: Vermutlich muss hier dann noch mehr rein
       // this also should increase ticket number in backend

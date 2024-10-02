@@ -80,6 +80,26 @@ class Api {
       ],
     } as unknown as AxiosResponse;
   }
+
+  public async setSupporterRole(
+    guildId: string,
+    supporterRoleId: string
+  ): Promise<
+    AxiosResponse<{ guildId: string; supporterRoleId: string }[], any>
+  > {
+    // return await this.axios.post(`/supporter-roles`, {
+    //   guildId,
+    //   supporterRoleId,
+    // });
+    return {
+      data: [
+        {
+          guildId: "1285912427208245360",
+          supporterRoleId: "754777029630623795",
+        },
+      ],
+    } as unknown as AxiosResponse;
+  }
 }
 
 const api = new Api(appConfig.axios.baseUrl, appConfig.axios.accessToken);

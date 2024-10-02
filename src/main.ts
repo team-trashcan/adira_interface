@@ -48,6 +48,23 @@ client.once("ready", async (client) => {
     );
   }
 
+  console.log("Getting next ticket number");
+  for (const guild of client.guilds.cache.values()) {
+    let highestTicketNumber = 0;
+    for (const channel of guild.channels.cache.values()) {
+      if (/^ticket-[0-9]+$/g.test(channel.name)) {
+        const ticketNumber = Number.parseInt(channel.name.slice(7));
+        if (ticketNumber > highestTicketNumber) {
+          highestTicketNumber = ticketNumber;
+        }
+      }
+    }
+    await redisCache.setValue(
+      `ticketNumber-${guild.id}`,
+      `${highestTicketNumber + 1}`
+    );
+  }
+
   console.log("Discord bot is ready!");
 });
 
