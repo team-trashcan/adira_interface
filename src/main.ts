@@ -2,8 +2,9 @@ import { Client } from "discord.js";
 import { deployCommands } from "./deployCommands";
 import appConfig from "./config";
 import { commands } from "./commands";
-import redisCache from "./redisCache";
+import redisCache, { RedisCacheItemNotFoundError } from "./redisCache";
 import api from "./api";
+import handleUserMessage from "./handleUserMessage";
 
 const client = new Client({
   intents: ["Guilds", "GuildMessages", "MessageContent"],
@@ -33,8 +34,17 @@ client.once("ready", async (client) => {
   const supporterRoleArray = (await api.getSupporterRoles()).data;
   for (const supporterRoleObject of supporterRoleArray) {
     redisCache.setValue(
-      supporterRoleObject.guildId,
+      `guildId-${supporterRoleObject.guildId}`,
       supporterRoleObject.supporterRoleId
+    );
+  }
+
+  console.log("Getting ticket channels");
+  const ticketChannelArray = (await api.getTicketChannels()).data;
+  for (const ticketChannel of ticketChannelArray) {
+    redisCache.setValue(
+      `channelId-${ticketChannel.channelId}`,
+      ticketChannel.username
     );
   }
 
@@ -58,10 +68,9 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 // This is how the bot can talk with users without (/) commands
-//  client.on("messageCreate", (message) => {
-//    if (message.author.bot) return;
-//    console.log(`${message.author.username}: ${message.content}`);
-//  });
+client.on("messageCreate", async (message) => {
+  await handleUserMessage(message);
+});
 
 // Login to discord
 client.login(appConfig.bot.discordToken);

@@ -57,12 +57,27 @@ class Api {
 
   // Tell backend that a ticket has been created
   // evtl. createTicket?
-  public async ticketHasBeenCreated(
+  public async addTicketChannel(
+    channelId: string,
     username: string
   ): Promise<AxiosResponse<{ success: boolean }, any>> {
-    // return await this.axios.post(`/ticket-created`, { username });
+    // return await this.axios.post(`/issues`, { channelId, username });
     return {
       data: { success: true },
+    } as unknown as AxiosResponse;
+  }
+
+  public async getTicketChannels(): Promise<
+    AxiosResponse<{ channelId: string; username: string }[], any>
+  > {
+    // return await this.axios.get(`/issues`)
+    return {
+      data: [
+        {
+          channelId: "1290916672085033030",
+          username: "wurstkatze",
+        },
+      ],
     } as unknown as AxiosResponse;
   }
 }

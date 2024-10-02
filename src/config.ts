@@ -18,6 +18,7 @@ export interface Config {
   };
   messages: {
     error500: string;
+    noSupporterRoleSetup: string;
   };
 }
 

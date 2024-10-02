@@ -3,7 +3,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import redisCache from "../redisCache";
+import redisCache, { RedisCacheItemNotFoundError } from "../redisCache";
 import appConfig from "../config";
 import api from "../api";
 
@@ -12,29 +12,40 @@ export const data = new SlashCommandBuilder()
   .setDescription("Opens a new ticket in a private discord channel.");
 
 export async function execute(interaction: CommandInteraction) {
+  // Don't run in DMs
   if (interaction.guild) {
+    // Get next issue number from highest channel number
     let ticketNumber;
     try {
-      ticketNumber = (await api.getTicketNumber()).data;
-    } catch {
+      ticketNumber = +(await redisCache.getValue("ticketNumber")).value;
+    } catch (error) {
+      if (error instanceof RedisCacheItemNotFoundError) {
+        ticketNumber = 1;
+      }
+      console.error("Error while getting ticket number:", error);
       return interaction.reply(appConfig.messages.error500);
     }
 
+    // Get supporterRoleId from cache
     let supporterRoleId;
     try {
-      supporterRoleId = (await redisCache.getValue(interaction.guild.id)).value;
-    } catch {
-      return interaction.reply(
-        "This server has no supporter role setup. Please contact an administrator."
-      );
+      supporterRoleId = (
+        await redisCache.getValue(`guildId-${interaction.guild.id}`)
+      ).value;
+    } catch (error) {
+      if (error instanceof RedisCacheItemNotFoundError) {
+        return interaction.reply(appConfig.messages.noSupporterRoleSetup);
+      }
+      console.error("Error while getting supporter role:", error);
+      return interaction.reply(appConfig.messages.error500);
     }
+
+    // Get supporterRole from discord
     const supporterRole = interaction.guild.roles.cache.find(
       (role) => (role.id = supporterRoleId)
     );
     if (supporterRole === undefined) {
-      return interaction.reply(
-        "This server has no supporter role setup. Please contact an administrator."
-      );
+      return interaction.reply(appConfig.messages.noSupporterRoleSetup);
     }
 
     try {
@@ -76,14 +87,12 @@ export async function execute(interaction: CommandInteraction) {
         ephemeral: true,
       });
 
-      // TODO: ticket number management completely in backend?
-      // meaning no redisCache here just get from api
-      // to /ticket-number-increased or smth
-      const newTicketNumber = +ticketNumber + 1;
-      await redisCache.setValue("ticketNumber", newTicketNumber.toString());
-
       // TODO: Vermutlich muss hier dann noch mehr rein
-      await api.ticketHasBeenCreated(interaction.user.username);
+      // this also should increase ticket number in backend
+      await api.addTicketChannel(
+        interaction.channelId,
+        interaction.user.username
+      );
     } catch (error) {
       console.error("Error creating private channel:", error);
       return interaction.reply(
@@ -91,6 +100,6 @@ export async function execute(interaction: CommandInteraction) {
       );
     }
   } else {
-    return interaction.reply("This command can only be used in a guild.");
+    return interaction.reply("This command can only be used in a server.");
   }
 }
