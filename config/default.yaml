@@ -13,3 +13,4 @@ app:
   messages:
     error500: Internal error. Please contact <@647535196039806979>.
     noSupporterRoleSetup: This server has no supporter role setup. Please contact an administrator.
+    errorNotInGuild: This command can only be used in a server.

@@ -1,6 +1,6 @@
 import {
+  ButtonInteraction,
   CommandInteraction,
-  EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
 import redisCache, { RedisCacheItemNotFoundError } from "../redisCache";
@@ -11,7 +11,9 @@ export const data = new SlashCommandBuilder()
   .setName("openticket")
   .setDescription("Opens a new ticket in a private discord channel.");
 
-export async function execute(interaction: CommandInteraction) {
+export async function execute(
+  interaction: CommandInteraction | ButtonInteraction
+) {
   // Don't run in DMs
   if (interaction.guild) {
     // Get next issue number from highest channel number
@@ -73,15 +75,20 @@ export async function execute(interaction: CommandInteraction) {
         ViewChannel: false,
       });
 
-      const embed = new EmbedBuilder()
-        .setTitle(`Support ticket #${ticketNumber} opened`)
-        .setDescription(
-          `Hey <@${interaction.user.id}>, your support ticket has been opened!\nPlease describe the issue you are facing.`
-        )
-        .setColor("#0099ff");
+      // Add ticket channel in backend
+      try {
+        await api.addTicketChannel(
+          interaction.channelId,
+          interaction.user.username
+        );
+      } catch {
+        return interaction.reply(appConfig.messages.error500);
+      }
 
-      // Send Embed in new suport channel
-      await channel.send({ embeds: [embed] });
+      // Send start message in new suport channel
+      await channel.send(
+        `Hey <@${interaction.user.id}>, your support ticket has been opened!\nPlease describe the issue you are facing.`
+      );
 
       // Silently reply to user and give channel link
       await interaction.reply({
@@ -89,16 +96,15 @@ export async function execute(interaction: CommandInteraction) {
         ephemeral: true,
       });
 
-      // Set next ticketNumber
+      // Set next ticketNumber to cache
       await redisCache.setValue(
         `ticketNumber-${interaction.guildId}`,
         `${ticketNumber + 1}`
       );
 
-      // TODO: Vermutlich muss hier dann noch mehr rein
-      // this also should increase ticket number in backend
-      await api.addTicketChannel(
-        interaction.channelId,
+      // Add channel to cache
+      await redisCache.setValue(
+        `channelId-${interaction.channelId}`,
         interaction.user.username
       );
     } catch (error) {

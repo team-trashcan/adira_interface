@@ -5,6 +5,7 @@ import { commands } from "./commands";
 import redisCache, { RedisCacheItemNotFoundError } from "./redisCache";
 import api from "./api";
 import handleUserMessage from "./handleUserMessage";
+import handleButtonPress from "./handleButtonPress";
 
 const client = new Client({
   intents: ["Guilds", "GuildMessages", "MessageContent"],
@@ -48,7 +49,7 @@ client.once("ready", async (client) => {
     );
   }
 
-  console.log("Getting next ticket number");
+  console.log("Calculating next ticket number");
   for (const guild of client.guilds.cache.values()) {
     let highestTicketNumber = 0;
     for (const channel of guild.channels.cache.values()) {
@@ -87,6 +88,11 @@ client.on("interactionCreate", async (interaction) => {
 // This is how the bot can talk with users without (/) commands
 client.on("messageCreate", async (message) => {
   await handleUserMessage(message);
+});
+
+// Bot reacts on button presses
+client.on("interactionCreate", async (interaction) => {
+  await handleButtonPress(interaction);
 });
 
 // Login to discord
