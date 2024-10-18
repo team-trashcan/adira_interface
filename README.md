@@ -1,4 +1,4 @@
-# Talking Trashcan
+# Adira Interface
 
 This is the Discord bot for our chatbot project.
 
