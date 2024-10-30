@@ -3,6 +3,8 @@ app:
     discordToken:
     discordClientId:
     forceReloadCommands: false
+    closedSupportTicketCategory: 'Closed Support Tickets'
+    openSupportTicketCategory: 'Support Tickets'
   redis:
     defaultTTL: 604800
     options:

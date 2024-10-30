@@ -5,6 +5,8 @@ export interface Config {
     discordToken: string;
     discordClientId: string;
     forceReloadCommands: boolean;
+    closedSupportTicketCategory: string;
+    openSupportTicketCategory: string;
   };
   redis: {
     defaultTTL: number;

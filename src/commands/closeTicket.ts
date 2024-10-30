@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 import redisCache, { RedisCacheItemNotFoundError } from "../redisCache";
 import appConfig from "../config";
+import getCategoryElseCreate from "../getCategoryElseCreate";
 
 export const data = new SlashCommandBuilder()
   .setName("closeticket")
@@ -71,19 +72,19 @@ export async function execute(interaction: CommandInteraction) {
       .setColor("#ff0909");
     interaction.channel.send({ embeds: [ticketClosedEmbed] });
 
-    // TODO: Move ticket channel in category "Closed Support Tickets"
+    // Get/Create closed tickets category
+    const category = await getCategoryElseCreate(
+      interaction.guild.channels,
+      appConfig.bot.closedSupportTicketCategory
+    );
 
-    // Tell customer and supporter that issue was closed
+    // Move channel to closed tickets category
+    await interaction.channel.setParent(category.id);
+
+    // Tell customer that issue was closed
     const customerUser = await interaction.client.users.fetch(customerUserId);
     customerUser.send(
-      `The ticket channel <#${interaction.channelId}> was closed${
-        reason !== undefined ? ` with reason: ${reason}` : "."
-      }`
-    );
-    interaction.user.send(
-      `The ticket channel <#${
-        interaction.channelId
-      }>, opened by <@${customerUserId}>, was closed${
+      `The support ticket channel <#${interaction.channelId}> was closed${
         reason !== undefined ? ` with reason: ${reason}` : "."
       }`
     );

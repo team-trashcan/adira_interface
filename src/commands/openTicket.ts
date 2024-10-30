@@ -6,6 +6,7 @@ import {
 import redisCache, { RedisCacheItemNotFoundError } from "../redisCache";
 import appConfig from "../config";
 import api from "../api";
+import getCategoryElseCreate from "../getCategoryElseCreate";
 
 export const data = new SlashCommandBuilder()
   .setName("openticket")
@@ -75,6 +76,15 @@ export async function execute(
         ViewChannel: false,
       });
 
+      // Get/Create open tickets category
+      const category = await getCategoryElseCreate(
+        interaction.guild.channels,
+        appConfig.bot.openSupportTicketCategory
+      );
+
+      // Move channel to open tickets category
+      await channel.setParent(category.id);
+
       // Add ticket channel in backend
       try {
         await api.addTicketChannel(
@@ -85,18 +95,16 @@ export async function execute(
         return interaction.reply(appConfig.messages.error500);
       }
 
-      // Send start message in new suport channel
-      await channel.send(
-        `Hey <@${interaction.user.id}>, your support ticket has been opened!\nPlease describe the issue you are facing.`
-      );
-
-      // TODO: Move ticket channel to category "Support Tickets"
-
       // Silently reply to user and give channel link
       await interaction.reply({
         content: `Support ticket opened: <#${channel.id}>`,
         ephemeral: true,
       });
+
+      // Send start message in new suport channel
+      await channel.send(
+        `Hey <@${interaction.user.id}>, your support ticket has been opened!\nPlease describe the issue you are facing.`
+      );
 
       // Set next ticketNumber to cache
       await redisCache.setValue(
