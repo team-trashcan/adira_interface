@@ -11,20 +11,14 @@ const client = new Client({
   intents: ["Guilds", "GuildMessages", "MessageContent"],
 });
 client.once("ready", async (client) => {
-  if (appConfig.bot.forceReloadCommands === true) {
-    // Reload (/) commands - they are only loaded when the bot gets added to a new server otherwise
-    console.log("Force reloading (/) commands");
-    for (const guild of client.guilds.cache.values()) {
-      await deployCommands(guild.id);
-    }
-  }
-
   let redisConnected = false;
   while (redisConnected === false) {
     try {
       await redisCache.client.connect();
-    } catch (error: any) {
-      console.log("Error connecting to redis:", error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log("Error connecting to redis:", error.message);
+      }
       await redisCache.client.disconnect();
       await new Promise((resolve) => setTimeout(resolve, 5000));
     }
@@ -64,6 +58,14 @@ client.once("ready", async (client) => {
       `ticketNumber-${guild.id}`,
       `${highestTicketNumber + 1}`
     );
+  }
+
+  if (appConfig.bot.forceReloadCommands === true) {
+    // Reload (/) commands - they are only loaded when the bot gets added to a new server otherwise
+    console.log("Force reloading (/) commands");
+    for (const guild of client.guilds.cache.values()) {
+      await deployCommands(guild.id);
+    }
   }
 
   console.log("Discord bot is ready!");

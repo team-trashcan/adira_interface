@@ -104,7 +104,7 @@ export async function execute(
 
       // Add channel to cache
       await redisCache.setValue(
-        `channelId-${interaction.channelId}`,
+        `channelId-${channel.id}`,
         interaction.user.username
       );
     } catch (error) {
