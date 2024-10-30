@@ -90,6 +90,8 @@ export async function execute(
         `Hey <@${interaction.user.id}>, your support ticket has been opened!\nPlease describe the issue you are facing.`
       );
 
+      // TODO: Move ticket channel to category "Support Tickets"
+
       // Silently reply to user and give channel link
       await interaction.reply({
         content: `Support ticket opened: <#${channel.id}>`,

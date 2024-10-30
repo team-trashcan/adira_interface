@@ -1,7 +1,9 @@
 import {
+  ChannelType,
   CommandInteraction,
   EmbedBuilder,
   GuildChannel,
+  OverwriteType,
   PermissionFlagsBits,
   SlashCommandBuilder,
 } from "discord.js";
@@ -18,36 +20,39 @@ export const data = new SlashCommandBuilder()
   );
 
 export async function execute(interaction: CommandInteraction) {
-  // Get the one who opened the issue
-  // let customerUserId;
-  // try {
-  //   customerUserId = (
-  //     await redisCache.getValue(`channelId-${interaction.channelId}`)
-  //   ).value;
-  // } catch (error) {
-  //   if (error instanceof RedisCacheItemNotFoundError) {
-  //     return interaction.reply({
-  //       content: "This channel is not a ticket channel and can't be closed.",
-  //       ephemeral: true,
-  //     });
-  //   }
-  //   return interaction.reply({
-  //     content: appConfig.messages.error500,
-  //     ephemeral: true,
-  //   });
-  // }
-  // TODO: find userId by checking who got viewing permissions
-  const customerUserId = "378333347509829633";
-
-  // Get reason for closing the issue
-  // TODO: this don't work yet
-  const reason = interaction.options.get("reason")?.value;
-
   // Only run if executed in guild channel
   if (
+    interaction.guild !== null &&
     interaction.channel !== null &&
-    interaction.channel instanceof GuildChannel
+    interaction.channel.type === ChannelType.GuildText
   ) {
+    // Get the one who opened the issue
+    let customerUserId: string | undefined;
+    try {
+      for (const overwrite of interaction.channel.permissionOverwrites.cache.values()) {
+        if (
+          overwrite.type === OverwriteType.Member &&
+          overwrite.allow.bitfield === PermissionFlagsBits.ViewChannel
+        ) {
+          customerUserId = overwrite.id;
+          break;
+        }
+      }
+
+      if (customerUserId === undefined) {
+        throw new Error("No user with view permission in channel found");
+      }
+    } catch (error) {
+      console.log("Error deleting ticket: Error finding user:", error);
+      return interaction.reply({
+        content: appConfig.messages.error500,
+        ephemeral: true,
+      });
+    }
+
+    // Get reason for closing the issue
+    const reason = interaction.options.get("reason")?.value;
+
     // Make channel read-only for customer
     interaction.channel
       .permissionsFor(customerUserId)
@@ -65,6 +70,8 @@ export async function execute(interaction: CommandInteraction) {
       )
       .setColor("#ff0909");
     interaction.channel.send({ embeds: [ticketClosedEmbed] });
+
+    // TODO: Move ticket channel in category "Closed Support Tickets"
 
     // Tell customer and supporter that issue was closed
     const customerUser = await interaction.client.users.fetch(customerUserId);
