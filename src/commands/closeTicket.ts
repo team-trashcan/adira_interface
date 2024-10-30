@@ -2,7 +2,6 @@ import {
   ChannelType,
   CommandInteraction,
   EmbedBuilder,
-  GuildChannel,
   OverwriteType,
   PermissionFlagsBits,
   SlashCommandBuilder,
@@ -18,6 +17,11 @@ export const data = new SlashCommandBuilder()
     option
       .setName("reason")
       .setDescription("Give a reason for closing the support ticket.")
+  )
+  .addBooleanOption((option) =>
+    option
+      .setName("force")
+      .setDescription("Force close the ticket, even if there is an error")
   );
 
 export async function execute(interaction: CommandInteraction) {
@@ -27,6 +31,35 @@ export async function execute(interaction: CommandInteraction) {
     interaction.channel !== null &&
     interaction.channel.type === ChannelType.GuildText
   ) {
+    // Get forceClose
+    const forceClose = interaction.options.get("force");
+
+    // Get supporterRoleId from cache
+    let supporterRoleId: string | undefined;
+    try {
+      supporterRoleId = (
+        await redisCache.getValue(`guildId-${interaction.guild.id}`)
+      ).value;
+    } catch (error) {
+      if (error instanceof RedisCacheItemNotFoundError) {
+        return interaction.reply(appConfig.messages.noSupporterRoleSetup);
+      }
+      if (!forceClose) {
+        console.error("Error while getting supporter role:", error);
+        return interaction.reply(appConfig.messages.error500);
+      }
+    }
+
+    // Get supporterRole
+    if (supporterRoleId !== undefined) {
+      const supporterRole = interaction.guild.roles.cache.find(
+        (role) => (role.id = supporterRoleId)
+      );
+      if (supporterRole === undefined && !forceClose) {
+        return interaction.reply(appConfig.messages.noSupporterRoleSetup);
+      }
+    }
+
     // Get the one who opened the issue
     let customerUserId: string | undefined;
     try {
@@ -44,20 +77,25 @@ export async function execute(interaction: CommandInteraction) {
         throw new Error("No user with view permission in channel found");
       }
     } catch (error) {
-      console.log("Error deleting ticket: Error finding user:", error);
-      return interaction.reply({
-        content: appConfig.messages.error500,
-        ephemeral: true,
-      });
+      if (!forceClose) {
+        console.log("Error deleting ticket: Error finding user:", error);
+        console.log("not froceClose:", forceClose);
+        return interaction.reply({
+          content: appConfig.messages.error500,
+          ephemeral: true,
+        });
+      }
+    }
+
+    if (customerUserId !== undefined) {
+      // Make channel read-only for customer
+      interaction.channel
+        .permissionsFor(customerUserId)
+        ?.remove(PermissionFlagsBits.SendMessages);
     }
 
     // Get reason for closing the issue
     const reason = interaction.options.get("reason")?.value;
-
-    // Make channel read-only for customer
-    interaction.channel
-      .permissionsFor(customerUserId)
-      ?.remove(PermissionFlagsBits.SendMessages);
 
     // Send in channel that ticket is closed
     const ticketClosedEmbed = new EmbedBuilder()
@@ -66,11 +104,13 @@ export async function execute(interaction: CommandInteraction) {
         `${
           reason !== undefined
             ? reason
-            : "This ticket was closed by a supporter."
+            : `This ticket was ${
+                forceClose ? "forcefully " : ""
+              }closed by a supporter.`
         }`
       )
       .setColor("#ff0909");
-    interaction.channel.send({ embeds: [ticketClosedEmbed] });
+    interaction.reply({ embeds: [ticketClosedEmbed] });
 
     // Get/Create closed tickets category
     const category = await getCategoryElseCreate(
@@ -81,14 +121,30 @@ export async function execute(interaction: CommandInteraction) {
     // Move channel to closed tickets category
     await interaction.channel.setParent(category.id);
 
-    // Tell customer that issue was closed
-    const customerUser = await interaction.client.users.fetch(customerUserId);
-    customerUser.send(
-      `The support ticket channel <#${interaction.channelId}> was closed${
-        reason !== undefined ? ` with reason: ${reason}` : "."
-      }`
-    );
-  }
+    // Re-apply permissions, since they get removed when moving - who invented that ._.
+    // Deny @everyone to view channel
+    interaction.channel.permissionOverwrites.edit(interaction.guild.id, {
+      ViewChannel: false,
+    });
+    // Allow the user who opened the ticket to view channel
+    interaction.channel.permissionOverwrites.edit(interaction.user.id, {
+      ViewChannel: true,
+    });
+    // Allow supporter role to view channel
+    if (supporterRoleId !== undefined) {
+      interaction.channel.permissionOverwrites.edit(supporterRoleId, {
+        ViewChannel: true,
+      });
+    }
 
-  return;
+    // Tell customer that issue was closed
+    if (customerUserId !== undefined) {
+      const customerUser = await interaction.client.users.fetch(customerUserId);
+      customerUser.send(
+        `The support ticket channel <#${interaction.channelId}> was closed${
+          reason !== undefined ? ` with reason: ${reason}` : "."
+        }`
+      );
+    }
+  }
 }

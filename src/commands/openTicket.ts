@@ -59,21 +59,7 @@ export async function execute(
         name: `Ticket #${ticketNumber}`,
         type: 0,
         topic: `Support ticket #${ticketNumber} opened by <@${interaction.user.id}>`,
-        permissionOverwrites: [
-          {
-            id: interaction.user.id,
-            allow: ["ViewChannel"],
-          },
-          {
-            id: supporterRole.id,
-            allow: ["ViewChannel"],
-          },
-        ],
-      });
-
-      // Deny @everyone to view channel
-      channel.permissionOverwrites.edit(interaction.guild.id, {
-        ViewChannel: false,
+        permissionOverwrites: [],
       });
 
       // Get/Create open tickets category
@@ -84,6 +70,19 @@ export async function execute(
 
       // Move channel to open tickets category
       await channel.setParent(category.id);
+
+      // Deny @everyone to view channel
+      channel.permissionOverwrites.edit(interaction.guild.id, {
+        ViewChannel: false,
+      });
+      // Allow the user who opened the ticket to view channel
+      channel.permissionOverwrites.edit(interaction.user.id, {
+        ViewChannel: true,
+      });
+      // Allow supporter role to view channel
+      channel.permissionOverwrites.edit(supporterRole.id, {
+        ViewChannel: true,
+      });
 
       // Add ticket channel in backend
       try {
