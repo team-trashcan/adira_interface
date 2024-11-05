@@ -1,6 +1,7 @@
 import { Message, OmitPartialGroupDMChannel } from "discord.js";
 import appConfig from "./config";
 import redisCache, { RedisCacheItemNotFoundError } from "./redisCache";
+import api from "./api";
 
 export default async function handleUserMessage(
   message: OmitPartialGroupDMChannel<Message<boolean>>
@@ -29,6 +30,7 @@ export default async function handleUserMessage(
 
   // Only reply to the one who opened the issue
   if (message.author.username === customerUsername) {
-    message.reply("Imagine a response from ChatGPT here...");
+    const aiMessage = (await api.sendUserMessage(message.content)).data;
+    message.reply(aiMessage.aiResponse);
   }
 }

@@ -45,16 +45,6 @@ class Api {
     } as unknown as AxiosResponse;
   }
 
-  // Get next ticket number
-  public async getTicketNumber(): Promise<
-    AxiosResponse<{ ticketNumber: number }, any>
-  > {
-    // return await this.axios.get(`/ticket-number`);
-    return {
-      data: { ticketNumber: 0 },
-    } as unknown as AxiosResponse;
-  }
-
   // Tell backend that a ticket has been created
   // evtl. createTicket?
   public async addTicketChannel(
@@ -98,6 +88,19 @@ class Api {
           supporterRoleId: "754777029630623795",
         },
       ],
+    } as unknown as AxiosResponse;
+  }
+
+  public async sendUserMessage(
+    // some identifier
+    message: string
+  ): Promise<AxiosResponse<{ aiResponse: string }, any>> {
+    // return await this.axios.post(`/user-message-oder-so`, {
+    //   // some identifier
+    //   message
+    // });
+    return {
+      data: { aiMessage: "Imagine a response from ChatGPT here..." },
     } as unknown as AxiosResponse;
   }
 }
