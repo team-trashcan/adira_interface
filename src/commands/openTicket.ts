@@ -100,7 +100,7 @@ export async function execute(
         ephemeral: true,
       });
 
-      // Send start message in new suport channel
+      // Send start message in new support channel
       await channel.send(
         `Hey <@${interaction.user.id}>, your support ticket has been opened!\nPlease describe the issue you are facing.`
       );

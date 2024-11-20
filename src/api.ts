@@ -100,7 +100,7 @@ class Api {
     //   message
     // });
     return {
-      data: { aiMessage: "Imagine a response from ChatGPT here..." },
+      data: { aiResponse: "Imagine a response from ChatGPT here..." },
     } as unknown as AxiosResponse;
   }
 }
