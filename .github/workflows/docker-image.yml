@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  build:
+  build-and-publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,12 +16,6 @@ jobs:
       # Build the Docker image
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag ghcr.io/${{ github.repository_owner }}/adira_interface:latest
-
-  publish:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
 
       # Log in to GitHub Container Registry
       - name: Log in to GitHub Container Registry
