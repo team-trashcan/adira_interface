@@ -7,6 +7,8 @@ import api from "./api";
 import handleUserMessage from "./handleUserMessage";
 import handleButtonPress from "./handleButtonPress";
 
+export class MissingBotVariableError extends Error {}
+
 const client = new Client({
   intents: ["Guilds", "GuildMessages", "MessageContent"],
 });
@@ -89,4 +91,9 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 // Login to discord
+if (
+  (appConfig.bot.discordToken ?? process.env.DISCORD_BOT_TOKEN) === undefined
+) {
+  throw new MissingBotVariableError("No Discord bot token found");
+}
 client.login(appConfig.bot.discordToken ?? process.env.DISCORD_BOT_TOKEN);
