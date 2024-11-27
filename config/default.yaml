@@ -1,10 +1,12 @@
 app:
+  debug:
+    debugEnabled: false
   bot:
     discordToken:
     discordClientId:
     forceReloadCommands: false
-    closedSupportTicketCategory: 'Closed Support Tickets'
-    openSupportTicketCategory: 'Support Tickets'
+    closedSupportTicketCategory: "Closed Support Tickets"
+    openSupportTicketCategory: "Support Tickets"
   redis:
     defaultTTL: 604800
     options:

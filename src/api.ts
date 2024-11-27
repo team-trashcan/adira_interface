@@ -4,10 +4,18 @@ import appConfig from "./config";
 export class ApiError extends Error {}
 
 class Api {
+  private debugEnabled: boolean;
+
   private axios: Axios;
   private accessToken: string;
 
-  public constructor(baseUrl: string, accessToken: string) {
+  public constructor(
+    baseUrl: string,
+    accessToken: string,
+    debugEnabled: boolean
+  ) {
+    this.debugEnabled = debugEnabled;
+
     this.axios = axios;
     this.accessToken = accessToken;
 
@@ -33,10 +41,12 @@ class Api {
   }
 
   public async getSupporterRole(guildId: string) {
-    // return await this.axios.get(`/supporter_role/${guildId}`);
-    return {
-      data: { roleId: "someId" },
-    };
+    if (this.debugEnabled) {
+      return {
+        data: { roleId: "someId" },
+      };
+    }
+    return await this.axios.get(`/supporter_role/${guildId}`);
   }
 
   // Tell backend that a ticket has been created
@@ -44,29 +54,31 @@ class Api {
     channelId: string,
     username: string
   ): Promise<AxiosResponse<{ success: boolean }, any>> {
-    // return await this.axios.post(`/sessions`, {
-    //   userId: username,
-    //   sessionId: channelId,
-    // });
-    // debug
-    return {
-      data: { success: true },
-    } as unknown as AxiosResponse;
+    if (this.debugEnabled) {
+      return {
+        data: { success: true },
+      } as unknown as AxiosResponse;
+    }
+    return await this.axios.post(`/sessions`, {
+      userId: username,
+      sessionId: channelId,
+    });
   }
 
   public async getTicketChannels(): Promise<
     AxiosResponse<{ channelId: string; username: string }[], any>
   > {
-    // return await this.axios.get(`/sessions`);
-    // debug
-    return {
-      data: [
-        {
-          channelId: "1290916672085033030",
-          username: "wurstkatze",
-        },
-      ],
-    } as unknown as AxiosResponse;
+    if (this.debugEnabled) {
+      return {
+        data: [
+          {
+            channelId: "1290916672085033030",
+            username: "wurstkatze",
+          },
+        ],
+      } as unknown as AxiosResponse;
+    }
+    return await this.axios.get(`/sessions`);
   }
 
   public async setSupporterRole(
@@ -75,18 +87,19 @@ class Api {
   ): Promise<
     AxiosResponse<{ guildId: string; supporterRoleId: string }[], any>
   > {
-    // return await this.axios.post(`/supporter_role/${guildId}`, {
-    //   roleId: supporterRoleId,
-    // });
-    // debug
-    return {
-      data: [
-        {
-          guildId: "1285912427208245360",
-          supporterRoleId: "754777029630623795",
-        },
-      ],
-    } as unknown as AxiosResponse;
+    if (this.debugEnabled) {
+      return {
+        data: [
+          {
+            guildId: "1285912427208245360",
+            supporterRoleId: "754777029630623795",
+          },
+        ],
+      } as unknown as AxiosResponse;
+    }
+    return await this.axios.post(`/supporter_role/${guildId}`, {
+      roleId: supporterRoleId,
+    });
   }
 
   public async sendUserMessage(
@@ -94,18 +107,23 @@ class Api {
     message: string,
     isSystemMessage?: boolean
   ): Promise<AxiosResponse<{ aiResponse: string }, any>> {
-    // return await this.axios.post(`/message`, {
-    //   sessionId: guildId,
-    //   message,
-    //   isSystemMessage,
-    // });
-    // debug
-    return {
-      data: { aiResponse: "Imagine a response from ChatGPT here..." },
-    } as unknown as AxiosResponse;
+    if (this.debugEnabled) {
+      return {
+        data: { aiResponse: "Imagine a response from ChatGPT here..." },
+      } as unknown as AxiosResponse;
+    }
+    return await this.axios.post(`/message`, {
+      sessionId: guildId,
+      message,
+      isSystemMessage,
+    });
   }
 }
 
-const api = new Api(appConfig.axios.baseUrl, appConfig.axios.accessToken);
+const api = new Api(
+  appConfig.axios.baseUrl,
+  appConfig.axios.accessToken,
+  appConfig.debug.debugEnabled
+);
 
 export default api;

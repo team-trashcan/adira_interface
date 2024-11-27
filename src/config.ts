@@ -1,6 +1,9 @@
 import config from "config";
 
 export interface Config {
+  debug: {
+    debugEnabled: boolean;
+  };
   bot: {
     discordToken: string;
     discordClientId: string;
