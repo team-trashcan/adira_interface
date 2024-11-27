@@ -9,6 +9,7 @@ import {
 import redisCache, { RedisCacheItemNotFoundError } from "../redisCache";
 import appConfig from "../config";
 import getCategoryElseCreate from "../getCategoryElseCreate";
+import api from "../api";
 
 export const data = new SlashCommandBuilder()
   .setName("closeticket")
@@ -35,19 +36,27 @@ export async function execute(interaction: CommandInteraction) {
     const forceClose = interaction.options.get("force");
 
     // Get supporterRoleId from cache
-    let supporterRoleId: string | undefined;
+    let supporterRoleId: string;
     try {
       supporterRoleId = (
         await redisCache.getValue(`guildId-${interaction.guild.id}`)
       ).value;
     } catch (error) {
       if (error instanceof RedisCacheItemNotFoundError) {
-        return interaction.reply(appConfig.messages.noSupporterRoleSetup);
+        try {
+          supporterRoleId = (await api.getSupporterRole(interaction.guild.id))
+            .data.roleId;
+          await redisCache.setValue(
+            `guildId-${interaction.guildId}`,
+            supporterRoleId
+          );
+        } catch (_) {
+          return interaction.reply(appConfig.messages.noSupporterRoleSetup);
+        }
       }
-      if (!forceClose) {
-        console.error("Error while getting supporter role:", error);
-        return interaction.reply(appConfig.messages.error500);
-      }
+
+      console.error("Error while getting supporter role:", error);
+      return interaction.reply(appConfig.messages.error500);
     }
 
     // Get supporterRole
@@ -79,7 +88,6 @@ export async function execute(interaction: CommandInteraction) {
     } catch (error) {
       if (!forceClose) {
         console.log("Error deleting ticket: Error finding user:", error);
-        console.log("not froceClose:", forceClose);
         return interaction.reply({
           content: appConfig.messages.error500,
           ephemeral: true,

@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import api from "../api";
 import appConfig from "../config";
+import redisCache from "../redisCache";
 
 export const data = new SlashCommandBuilder()
   .setName("setup")
@@ -34,7 +35,14 @@ export async function execute(interaction: CommandInteraction) {
   }
 
   // Supporter role
-  const supporterRoleId = interaction.options.get("supporter-role")?.value;
+  const supporterRoleId = interaction.options
+    .get("supporter-role")
+    ?.value?.toString();
+  if (!supporterRoleId) {
+    console.error("/setup: no supporterRoleId given - should not be possible");
+    return interaction.reply(appConfig.messages.error500);
+  }
+
   const supporterRole = interaction.guild.roles.cache.find(
     (channel) => channel.id === supporterRoleId
   );
@@ -50,6 +58,7 @@ export async function execute(interaction: CommandInteraction) {
       ephemeral: true,
     });
   }
+  await redisCache.setValue(`guildId-${interaction.guildId}`, supporterRoleId);
   await api.setSupporterRole(interaction.guildId, `${supporterRoleId}`);
 
   // Support channel

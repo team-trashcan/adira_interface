@@ -39,8 +39,18 @@ export async function execute(
       ).value;
     } catch (error) {
       if (error instanceof RedisCacheItemNotFoundError) {
-        return interaction.reply(appConfig.messages.noSupporterRoleSetup);
+        try {
+          supporterRoleId = (await api.getSupporterRole(interaction.guild.id))
+            .data.roleId;
+          await redisCache.setValue(
+            `guildId-${interaction.guildId}`,
+            supporterRoleId
+          );
+        } catch (_) {
+          return interaction.reply(appConfig.messages.noSupporterRoleSetup);
+        }
       }
+
       console.error("Error while getting supporter role:", error);
       return interaction.reply(appConfig.messages.error500);
     }

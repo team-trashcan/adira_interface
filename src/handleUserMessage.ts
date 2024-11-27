@@ -8,6 +8,7 @@ export default async function handleUserMessage(
 ) {
   // Only run for humans
   if (message.author.bot) return;
+  if (message.guildId === null) return;
 
   // Determine if message was sent in a ticket channel
   let customerUsername;
@@ -28,9 +29,26 @@ export default async function handleUserMessage(
     return;
   }
 
+  let supporterRoleId = "";
+  try {
+    supporterRoleId = (await redisCache.getValue(`guildId-${message.guildId}`))
+      .value;
+  } catch (error) {
+    if (error instanceof RedisCacheItemNotFoundError) {
+      supporterRoleId = (await api.getSupporterRole(message.guildId)).data
+        .roleId;
+      await redisCache.setValue(`guildId-${message.guildId}`, supporterRoleId);
+    }
+  }
+
+  const roleIds = message.member?.roles.cache.map((role) => role.id) || [];
+  const isSupporter = roleIds.includes(supporterRoleId);
+
   // Only reply to the one who opened the issue
-  if (message.author.username === customerUsername) {
-    const aiMessage = (await api.sendUserMessage(message.content)).data;
+  if (message.author.username === customerUsername || isSupporter) {
+    const aiMessage = (
+      await api.sendUserMessage(message.guildId, message.content, isSupporter)
+    ).data;
     message.reply(aiMessage.aiResponse);
   }
 }

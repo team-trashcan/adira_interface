@@ -25,15 +25,6 @@ client.once("ready", async (client) => {
     redisConnected = redisCache.client.isReady;
   }
 
-  console.log("Getting supporter roles");
-  const supporterRoleArray = (await api.getSupporterRoles()).data;
-  for (const supporterRoleObject of supporterRoleArray) {
-    redisCache.setValue(
-      `guildId-${supporterRoleObject.guildId}`,
-      supporterRoleObject.supporterRoleId
-    );
-  }
-
   console.log("Getting ticket channels");
   const ticketChannelArray = (await api.getTicketChannels()).data;
   for (const ticketChannel of ticketChannelArray) {

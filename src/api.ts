@@ -1,6 +1,8 @@
 import axios, { Axios, AxiosError, AxiosResponse } from "axios";
 import appConfig from "./config";
 
+export class ApiError extends Error {}
+
 class Api {
   private axios: Axios;
   private accessToken: string;
@@ -22,36 +24,31 @@ class Api {
 
     axios.interceptors.response.use(
       (res) => res,
-      async (e: Error) => {
-        if (e instanceof AxiosError) {
-          throw new Error(JSON.stringify(e.response?.data));
+      async (error: Error) => {
+        if (error instanceof AxiosError) {
+          throw new ApiError(JSON.stringify(error));
         }
       }
     );
   }
 
-  // Get supporter roles
-  public async getSupporterRoles(): Promise<
-    AxiosResponse<{ guildId: string; supporterRoleId: string }[], any>
-  > {
-    // return await this.axios.get(`/supporter-roles`);
+  public async getSupporterRole(guildId: string) {
+    // return await this.axios.get(`/supporter_role/${guildId}`);
     return {
-      data: [
-        {
-          guildId: "1285912427208245360",
-          supporterRoleId: "1286049120813060166",
-        },
-      ],
-    } as unknown as AxiosResponse;
+      data: { roleId: "someId" },
+    };
   }
 
   // Tell backend that a ticket has been created
-  // evtl. createTicket?
   public async addTicketChannel(
     channelId: string,
     username: string
   ): Promise<AxiosResponse<{ success: boolean }, any>> {
-    // return await this.axios.post(`/issues`, { channelId, username });
+    // return await this.axios.post(`/sessions`, {
+    //   userId: username,
+    //   sessionId: channelId,
+    // });
+    // debug
     return {
       data: { success: true },
     } as unknown as AxiosResponse;
@@ -60,7 +57,8 @@ class Api {
   public async getTicketChannels(): Promise<
     AxiosResponse<{ channelId: string; username: string }[], any>
   > {
-    // return await this.axios.get(`/issues`)
+    // return await this.axios.get(`/sessions`);
+    // debug
     return {
       data: [
         {
@@ -77,10 +75,10 @@ class Api {
   ): Promise<
     AxiosResponse<{ guildId: string; supporterRoleId: string }[], any>
   > {
-    // return await this.axios.post(`/supporter-roles`, {
-    //   guildId,
-    //   supporterRoleId,
+    // return await this.axios.post(`/supporter_role/${guildId}`, {
+    //   roleId: supporterRoleId,
     // });
+    // debug
     return {
       data: [
         {
@@ -92,13 +90,16 @@ class Api {
   }
 
   public async sendUserMessage(
-    // some identifier
-    message: string
+    guildId: string,
+    message: string,
+    isSystemMessage?: boolean
   ): Promise<AxiosResponse<{ aiResponse: string }, any>> {
-    // return await this.axios.post(`/user-message-oder-so`, {
-    //   // some identifier
-    //   message
+    // return await this.axios.post(`/message`, {
+    //   sessionId: guildId,
+    //   message,
+    //   isSystemMessage,
     // });
+    // debug
     return {
       data: { aiResponse: "Imagine a response from ChatGPT here..." },
     } as unknown as AxiosResponse;
