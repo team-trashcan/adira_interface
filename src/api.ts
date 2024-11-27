@@ -34,7 +34,9 @@ class Api {
       (res) => res,
       async (error: Error) => {
         if (error instanceof AxiosError) {
-          throw new ApiError(JSON.stringify(error));
+          throw new ApiError(
+            `ApiError: ${error.status}: ${error.response?.statusText}`
+          );
         }
       }
     );

@@ -2,8 +2,8 @@ import { Client } from "discord.js";
 import { deployCommands } from "./deployCommands";
 import appConfig from "./config";
 import { commands } from "./commands";
-import redisCache, { RedisCacheItemNotFoundError } from "./redisCache";
-import api from "./api";
+import redisCache, { RedisCacheSetError } from "./redisCache";
+import api, { ApiError } from "./api";
 import handleUserMessage from "./handleUserMessage";
 import handleButtonPress from "./handleButtonPress";
 
@@ -27,16 +27,25 @@ client.once("ready", async (client) => {
     redisConnected = redisCache.client.isReady;
   }
 
-  console.log("Getting ticket channels");
-  const ticketChannelArray = (await api.getTicketChannels()).data;
-  for (const ticketChannel of ticketChannelArray) {
-    redisCache.setValue(
-      `channelId-${ticketChannel.channelId}`,
-      ticketChannel.username
-    );
+  let gotTicketChannels = false;
+  while (!gotTicketChannels) {
+    try {
+      const ticketChannelArray = (await api.getTicketChannels()).data;
+      for (const ticketChannel of ticketChannelArray) {
+        redisCache.setValue(
+          `channelId-${ticketChannel.channelId}`,
+          ticketChannel.username
+        );
+      }
+      gotTicketChannels = true;
+    } catch (error) {
+      if (error instanceof ApiError || error instanceof RedisCacheSetError) {
+        console.warn("Error getting ticket channels:", error.message);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    }
   }
 
-  console.log("Calculating next ticket number");
   for (const guild of client.guilds.cache.values()) {
     let highestTicketNumber = 0;
     for (const channel of guild.channels.cache.values()) {
