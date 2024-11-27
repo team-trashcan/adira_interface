@@ -12,7 +12,7 @@ app:
     options:
       url: redis://127.0.0.1
   axios:
-    baseUrl:
+    baseUrl: https://adira0.uber.space
     accessToken:
   messages:
     error500: Internal error. Please contact <@647535196039806979>.
