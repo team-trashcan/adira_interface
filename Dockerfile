@@ -1,17 +1,26 @@
 FROM node:20-alpine
 
-CMD "npm install && npm run build"
-
+# Set up the application directory
 RUN mkdir /app && chown node:node /app
-
 WORKDIR /app
 
-COPY config /app/config
-COPY dist /app/dist
-COPY node_modules /app/node_modules
+# Copy only files needed for install and build
+COPY package*.json /app/
 
+# Install production dependencies
+RUN npm ci --omit=dev
+
+# Copy the rest of the application source code
+COPY . /app
+
+# Build the project (adjust if using a different build command)
+RUN npm run build
+
+# Ensure correct permissions
 RUN chown -R node:node /app
 
+# Switch to the non-root user
 USER node
 
-CMD ["node", "--require", "/app/dist/server.js"]
+# Start the application
+CMD ["node", "/app/dist/server.js"]
