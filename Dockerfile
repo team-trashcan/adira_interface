@@ -1,5 +1,7 @@
 FROM node:20-alpine
 
+RUN apk add --no-cache redis
+
 RUN mkdir /app && chown node:node /app
 WORKDIR /app
 
@@ -17,4 +19,4 @@ RUN chown -R node:node /app
 
 USER node
 
-CMD ["node", "/app/dist/server.js"]
+CMD redis-server --daemonize yes && node /app/dist/server.js
