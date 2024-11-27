@@ -2,7 +2,29 @@
 
 This is the Discord bot for our chatbot project.
 
-## Setup
+## Production
+
+Pull the Docker Image from the GitHub Container Registry:
+
+```console
+docker pull ghcr.io/team-trashcan/adira_interface:latest
+```
+
+These environment variables are needed (obtained through the [Discord Developer Portal](https://discord.com/developers/applications)):
+
+`DISCORD_BOT_TOKEN`: The bot token, equal to the bot's password \
+`DISCORD_BOT_CLIENT_ID`: The client id of the bot, encased in quotation marks
+
+Example:
+
+```console
+DISCORD_BOT_TOKEN=MHL4NZkwOTL3MjQwMzMxMDY1Mw.KmUmVh.ap4wOPACYZGNKBHbeH4rcuc164mX3CS-taY9XM
+DISCORD_BOT_CLIENT_ID="3255909182403310038"
+```
+
+## Development
+
+### Setup
 
 Install necessary dependencies:
 
@@ -10,7 +32,7 @@ Install necessary dependencies:
 npm i
 ```
 
-Add a `config/development.yaml` file with the bot token and client id (retrieved from the [Discord Developer Portal](https://discord.com/developers/applications/1285909172403310653)):
+Add a `config/development.yaml` file with the bot token and client id (obtained through the [Discord Developer Portal](https://discord.com/developers/applications)):
 
 ```yaml
 app:
@@ -20,7 +42,7 @@ app:
     forceReloadCommands: false
 ```
 
-## Development
+### Run the bot
 
 To run the bot:
 
@@ -28,7 +50,7 @@ To run the bot:
 npm run run
 ```
 
-To restart it everytime something changes in the code:
+To restart it every time something changes in the code:
 
 ```console
 npm run dev
@@ -36,13 +58,5 @@ npm run dev
 
 ### Force Reload / Commands
 
-This is only necessary if a new command is added or the desription of one is changed.\
+This is only necessary if a new command is added or the description of one is changed.\
 To reload the `/` commands, set the variable `forceReloadCommands` to `true`.
-
-## Production
-
-To compile for production:
-
-```console
-npm run build
-```

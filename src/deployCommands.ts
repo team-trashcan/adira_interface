@@ -11,7 +11,10 @@ export async function deployCommands(guildId: string) {
     console.log("Reloading (/) commands");
 
     await rest.put(
-      Routes.applicationGuildCommands(appConfig.bot.discordClientId, guildId),
+      Routes.applicationGuildCommands(
+        appConfig.bot.discordClientId ?? process.env.DISCORD_BOT_CLIENT_ID,
+        guildId
+      ),
       {
         body: commandsData,
       }

@@ -89,4 +89,4 @@ client.on("interactionCreate", async (interaction) => {
 });
 
 // Login to discord
-client.login(appConfig.bot.discordToken);
+client.login(appConfig.bot.discordToken ?? process.env.DISCORD_BOT_TOKEN);
