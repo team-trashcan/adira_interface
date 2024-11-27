@@ -12,4 +12,5 @@ RUN chown -R node:node /app
 
 USER node
 
+CMD "npm install && npm run build"
 CMD ["node", "--require", "/app/dist/server.js"]
