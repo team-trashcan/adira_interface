@@ -70,7 +70,7 @@ client.once("ready", async (client) => {
     }
   }
 
-  console.log("Discord bot is ready!");
+  console.log("Discord bot is ready.");
 });
 
 // Deploy (/) commands when joining a new server
