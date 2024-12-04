@@ -93,14 +93,14 @@ class Api {
       return {
         data: [
           {
-            guildId: "1285912427208245360",
+            serverId: "1285912427208245360",
             supporterRoleId: "754777029630623795",
           },
         ],
       } as unknown as AxiosResponse;
     }
     return await this.axios.post(`/supporter_role`, {
-      guildId,
+      serverId: guildId,
       roleId: supporterRoleId,
     });
   }
