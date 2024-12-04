@@ -99,7 +99,8 @@ class Api {
         ],
       } as unknown as AxiosResponse;
     }
-    return await this.axios.post(`/supporter_role/${guildId}`, {
+    return await this.axios.post(`/supporter_role`, {
+      guildId,
       roleId: supporterRoleId,
     });
   }
