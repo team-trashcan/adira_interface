@@ -42,6 +42,11 @@ app:
     forceReloadCommands: false
 ```
 
+### Logging
+
+The bot only logs errors and warnings by default.\
+To enable debug logging, either set the environment variable `DISCORD_BOT_LOG_LEVEL` or `app.debug.logLevel` in `config/development.yaml` to `DEBUG`
+
 ### Run the bot
 
 To run the bot:

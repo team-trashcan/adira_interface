@@ -1,8 +1,10 @@
 import config from "config";
+import { LogLevel } from "./logger";
 
 export interface Config {
   debug: {
     debugEnabled: boolean;
+    logLevel: LogLevel;
   };
   bot: {
     discordToken: string;

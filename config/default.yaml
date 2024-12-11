@@ -1,6 +1,7 @@
 app:
   debug:
     debugEnabled: false
+    logLevel: "INFO" # set to "DEBUG" for debug logs
   bot:
     discordToken:
     discordClientId:

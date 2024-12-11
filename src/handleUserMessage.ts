@@ -47,7 +47,7 @@ export default async function handleUserMessage(
   // Only reply to the one who opened the issue
   if (message.author.username === customerUsername || isSupporter) {
     const aiMessage = (
-      await api.sendUserMessage(message.guildId, message.content, isSupporter)
+      await api.sendUserMessage(message.channelId, message.content, isSupporter)
     ).data;
     message.reply(aiMessage.aiResponse);
   }
